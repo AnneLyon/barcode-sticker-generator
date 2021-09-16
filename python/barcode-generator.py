@@ -4,26 +4,33 @@ from fpdf import FPDF
 from barcode import Code128
 from barcode.writer import ImageWriter
 
-
+#input data to initialize barcode generation
 name = input("Name of music: ")
 index = input("Starting number: ")
 to_index = input("Last number in series: ")
-pdf = FPDF()
+
+#generate barcodes and write as file to a temp directory
 outputdir = "temp/"
+try:
+    os.mkdir(outputdir)
+except:
+    pass
 
 while int(index) <= int(to_index):
 
     with open(outputdir + str(name) + str(index) + '.jpeg', 'wb') as f:
         Code128((str(name) + " " + str(index)), writer=ImageWriter()).write(f)
     index = int(index) + 1
+    time.sleep(0.005)
 
+#time.sleep(1)
 
-
-pdf.set_font('Times', '', 12)
-time.sleep(1)
-
+#list the files with barcodes, and sort them by created date
 generated = os.listdir(outputdir)
+files = [os.path.join(outputdir, f) for f in generated] # add path to each file
+files.sort(key=lambda x: os.path.getmtime(x))
 
+#print the generated barcodes to the pdf file
 margin = 5
 y = margin
 x = margin
@@ -32,12 +39,10 @@ barCodeWidth = 50
 barCodeHeight = 25
 labelWidth = 70
 labelHeight = 37
-pdf.add_page()
 rownumber = 1
-
-files = [os.path.join(outputdir, f) for f in generated] # add path to each file
-files.sort(key=lambda x: os.path.getmtime(x))
-
+pdf = FPDF()
+pdf.set_font('Times', '', 12)
+pdf.add_page()
 for image in files:
     print(image)
     pdf.image(image, x, y, barCodeWidth, barCodeHeight)
@@ -52,9 +57,9 @@ for image in files:
         pdf.add_page()
 
 
-# for i in range(1, 10):
-#    pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
+# output the pdf file to the generated-pdf directory
 pdf.output("generated-pdf/" + name + ".pdf", "F")
 
+#remove all temporary barcode files
 for f in generated:
     os.remove(os.path.join(outputdir, f))
