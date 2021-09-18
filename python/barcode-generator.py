@@ -4,24 +4,38 @@ from fpdf import FPDF
 from barcode import Code128
 from barcode.writer import ImageWriter
 
-#input data to initialize barcode generation
-name = input("Name of music: ")
-index = input("Starting number: ")
-to_index = input("Last number in series: ")
-
-#generate barcodes and write as file to a temp directory
+#initialiser katalog
 outputdir = "temp/"
 try:
     os.mkdir(outputdir)
 except:
     pass
+nameOfPdfFile = ""
 
-while int(index) <= int(to_index):
+#input data to initialize barcode generation
+typeTekstInput = input("Skal du lage barkoder med medlemsnavn? Tast J for ja, eller N for nei: ")
+if ((typeTekstInput == "J") or (typeTekstInput == "j")):
+    navn = input("Lim inn en kommaseparert liste med navn: ")
+    navneListe = navn.split(",")
+     #generate barcodes and write as file to a temp directory
+    for navn in navneListe:
+        with open(outputdir + str(navn) + '.jpeg', 'wb') as f:
+            Code128((str(navn)), writer=ImageWriter()).write(f)
+        time.sleep(0.005)
+        nameOfPdfFile = "generated-pdf/" + "medlemsnavn.pdf"
+else:
+    verkNavn = input("Navn på verk: ")
+    index = input("Startnummer: ")
+    to_index = input("Siste nummer: ")
 
-    with open(outputdir + str(name) + str(index) + '.jpeg', 'wb') as f:
-        Code128((str(name) + " " + str(index)), writer=ImageWriter()).write(f)
-    index = int(index) + 1
-    time.sleep(0.005)
+    #generate barcodes and write as file to a temp directory
+    while int(index) <= int(to_index):
+
+        with open(outputdir + str(verkNavn) + str(index) + '.jpeg', 'wb') as f:
+            Code128((str(verkNavn) + " " + str(index)), writer=ImageWriter()).write(f)
+        index = int(index) + 1
+        time.sleep(0.005)
+        nameOfPdfFile = "generated-pdf/" + verkNavn + ".pdf"
 
 #time.sleep(1)
 
@@ -35,8 +49,8 @@ margin = 5
 y = margin
 x = margin
 col = 0
-barCodeWidth = 50
-barCodeHeight = 25
+barCodeWidth = 60
+barCodeHeight = 20
 labelWidth = 70
 labelHeight = 37
 rownumber = 1
@@ -58,7 +72,7 @@ for image in files:
 
 
 # output the pdf file to the generated-pdf directory
-pdf.output("generated-pdf/" + name + ".pdf", "F")
+pdf.output(nameOfPdfFile, "F")
 
 #remove all temporary barcode files
 for f in generated:
